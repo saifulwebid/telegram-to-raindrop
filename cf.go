@@ -1,18 +1,27 @@
 package ttr
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/saifulwebid/telegram-to-raindrop/telegram"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-func CFHandler(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatalf("failed reading request body: %v", err)
-	}
+var (
+	webhook *tb.Webhook
+)
 
-	fmt.Println(r)
-	fmt.Println(string(body))
+func init() {
+	var err error
+
+	webhook, err = telegram.NewWebhookHandler(os.Getenv("TELEGRAM_TOKEN"), os.Getenv("TELEGRAM_HOOK_URL"))
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func CFHandler(w http.ResponseWriter, r *http.Request) {
+	webhook.ServeHTTP(w, r)
 }
