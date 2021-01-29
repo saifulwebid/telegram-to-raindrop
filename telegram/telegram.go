@@ -46,9 +46,15 @@ func NewWebhookHandler(token, webhookUrl string, saveLinks LinkSaver) (*tb.Webho
 			log.Printf("Message from HN channel, links filtered to: %v", links)
 		}
 
+		if len(links) == 0 {
+			b.Reply(m, "No links detected.")
+			return
+		}
+
 		err := saveLinks(links)
 		if err != nil {
 			b.Reply(m, fmt.Sprintf("Error saving link: %s", err), tb.NoPreview)
+			return
 		}
 
 		b.Reply(m, "Saved.")
