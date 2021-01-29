@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/saifulwebid/telegram-to-raindrop/raindrop"
 	"github.com/saifulwebid/telegram-to-raindrop/telegram"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -16,7 +17,9 @@ var (
 func init() {
 	var err error
 
-	webhook, err = telegram.NewWebhookHandler(os.Getenv("TELEGRAM_TOKEN"), os.Getenv("TELEGRAM_HOOK_URL"))
+	raindropClient := raindrop.NewClient(os.Getenv("RAINDROP_TOKEN"))
+
+	webhook, err = telegram.NewWebhookHandler(os.Getenv("TELEGRAM_TOKEN"), os.Getenv("TELEGRAM_HOOK_URL"), raindropClient.Save)
 	if err != nil {
 		log.Fatalln(err)
 	}

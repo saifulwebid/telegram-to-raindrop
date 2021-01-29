@@ -9,7 +9,9 @@ import (
 	xurls "mvdan.cc/xurls/v2"
 )
 
-func NewWebhookHandler(token, webhookUrl string) (*tb.Webhook, error) {
+type LinkSaver func([]string) error
+
+func NewWebhookHandler(token, webhookUrl string, saveLinks LinkSaver) (*tb.Webhook, error) {
 	webhook := &tb.Webhook{
 		Endpoint: &tb.WebhookEndpoint{
 			PublicURL: webhookUrl,
@@ -34,6 +36,13 @@ func NewWebhookHandler(token, webhookUrl string) (*tb.Webhook, error) {
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		links := getLinks(m)
 		log.Printf("Links found: %v", links)
+
+		err := saveLinks(links)
+		if err != nil {
+			b.Reply(m, fmt.Sprintf("Error saving link: %s", err), tb.NoPreview)
+		}
+
+		b.Reply(m, "Saved.")
 	})
 
 	go b.Start()
