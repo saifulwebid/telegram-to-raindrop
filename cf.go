@@ -19,7 +19,11 @@ func init() {
 
 	raindropClient := raindrop.NewClient(os.Getenv("RAINDROP_TOKEN"))
 
-	webhook, err = telegram.NewWebhookHandler(os.Getenv("TELEGRAM_TOKEN"), os.Getenv("TELEGRAM_HOOK_URL"), raindropClient.Save)
+	webhook, err = telegram.NewWebhookHandler(telegram.Settings{
+		Token:      os.Getenv("TELEGRAM_TOKEN"),
+		WebhookURL: os.Getenv("TELEGRAM_HOOK_URL"),
+		LinkSaver:  raindropClient.Save,
+	})
 	if err != nil {
 		log.Fatalln(err)
 	}

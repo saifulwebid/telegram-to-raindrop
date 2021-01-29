@@ -15,10 +15,16 @@ const (
 
 type LinkSaver func([]string) error
 
-func NewWebhookHandler(token, webhookUrl string, saveLinks LinkSaver) (*tb.Webhook, error) {
+type Settings struct {
+	Token      string
+	WebhookURL string
+	LinkSaver  LinkSaver
+}
+
+func NewWebhookHandler(s Settings) (*tb.Webhook, error) {
 	webhook := &tb.Webhook{
 		Endpoint: &tb.WebhookEndpoint{
-			PublicURL: webhookUrl,
+			PublicURL: s.WebhookURL,
 		},
 	}
 
@@ -29,7 +35,7 @@ func NewWebhookHandler(token, webhookUrl string, saveLinks LinkSaver) (*tb.Webho
 	})
 
 	b, err := tb.NewBot(tb.Settings{
-		Token:   token,
+		Token:   s.Token,
 		Poller:  loggedWebhook,
 		Verbose: true,
 	})
@@ -51,7 +57,7 @@ func NewWebhookHandler(token, webhookUrl string, saveLinks LinkSaver) (*tb.Webho
 			return
 		}
 
-		err := saveLinks(links)
+		err := s.LinkSaver(links)
 		if err != nil {
 			b.Reply(m, fmt.Sprintf("Error saving link: %s", err), tb.NoPreview)
 			return
