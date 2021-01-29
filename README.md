@@ -17,6 +17,7 @@
    ```sh
    export TELEGRAM_TOKEN="<token>"
    export TELEGRAM_HOOK_URL="<url returned from the SSH session>"
+   export TELEGRAM_ADMIN_ID="<your Telegram internal ID>" # optional
    export RAINDROP_TOKEN="<your Raindrop.io API token>"
    
    make run

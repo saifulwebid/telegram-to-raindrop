@@ -19,6 +19,8 @@ type Settings struct {
 	Token      string
 	WebhookURL string
 	LinkSaver  LinkSaver
+
+	AdminUser int
 }
 
 func NewWebhookHandler(s Settings) (*tb.Webhook, error) {
@@ -28,20 +30,48 @@ func NewWebhookHandler(s Settings) (*tb.Webhook, error) {
 		},
 	}
 
-	loggedWebhook := tb.NewMiddlewarePoller(webhook, func(u *tb.Update) bool {
-		j, _ := json.MarshalIndent(u, "", "\t")
-		log.Printf("Update received:\n%v", string(j))
-		return true
-	})
-
 	b, err := tb.NewBot(tb.Settings{
 		Token:   s.Token,
-		Poller:  loggedWebhook,
 		Verbose: true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("telebot.NewBot failed: %w", err)
 	}
+
+	b.Poller = webhook
+
+	if s.AdminUser != 0 {
+		b.Poller = tb.NewMiddlewarePoller(b.Poller, func(u *tb.Update) bool {
+			if u.Message == nil {
+				return true
+			}
+
+			if u.Message.Sender == nil {
+				return true
+			}
+
+			if u.Message.Sender.ID != s.AdminUser {
+				admin := &tb.User{ID: s.AdminUser}
+				b.Send(admin, fmt.Sprintf(
+					"Unknown user: %s %s (username: %s)",
+					u.Message.Sender.FirstName,
+					u.Message.Sender.LastName,
+					u.Message.Sender.Username,
+				))
+				b.Forward(admin, u.Message)
+
+				return false
+			}
+
+			return true
+		})
+	}
+
+	b.Poller = tb.NewMiddlewarePoller(b.Poller, func(u *tb.Update) bool {
+		j, _ := json.MarshalIndent(u, "", "\t")
+		log.Printf("Update received:\n%v", string(j))
+		return true
+	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		links := getLinks(m)
