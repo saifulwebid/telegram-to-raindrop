@@ -22,3 +22,15 @@
    
    make run
    ```
+
+## Deployment
+
+Specify GCP project ID and region as environment variables, then execute the
+deployment script.
+
+```sh
+export GCP_PROJECT="<project ID>"
+export GCP_REGION="<region>"
+
+make deploy
+```

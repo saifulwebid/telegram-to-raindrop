@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+set -euo pipefail
+
+: "${GCP_PROJECT:?'$GCP_PROJECT is undefined. Exiting.'}"
+: "${GCP_REGION:?'$GCP_REGION is undefined. Exiting.'}"
+
+GCP_FUNCTION_NAME="TelegramHandler"
+
+gcloud functions deploy "$GCP_FUNCTION_NAME" \
+    --project "$GCP_PROJECT" --region "$GCP_REGION" \
+    --format none
